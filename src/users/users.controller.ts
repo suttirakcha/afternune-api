@@ -5,18 +5,18 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get('')
-  getUsers() {
-    return this.usersService.getUsers();
+  @Get()
+  async getUsers() {
+    return await this.usersService.getUsers();
   }
 
-  @Get('me')
-  getProfile() {
-    return this.usersService.getProfile();
-  }
+  // @Get('me')
+  // getProfile() {
+  //   return this.usersService.getProfile();
+  // }
 
   @Get(':id')
-  getUserById(@Param('id') id: string) {
-    return this.usersService.getUserById(id);
+  async getUserById(@Param('id') id: string) {
+    return await this.usersService.getUserById(id);
   }
 }
