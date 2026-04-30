@@ -6,22 +6,13 @@ export class GlobalValidationPipe extends ValidationPipe {
       whitelist: true,
       transform: true,
       exceptionFactory: (errors) => {
-        const formattedErrors = errors.reduce<Record<string, string[]>>(
-          (acc, curr) => {
-            if (curr.constraints) {
-              acc[curr.property] = Object.values(curr.constraints);
-            }
-            return acc;
-          },
-          {},
-        );
-
-        throw new BadRequestException({
-          code: 'VALIDATION_FAILED',
-          message: 'Validation failed',
-          details: formattedErrors,
-        });
+        const result = errors.map((error) => ({
+          property: error.property,
+          message: Object.values(error.constraints ?? {})[0],
+        }));
+        return new BadRequestException(result);
       },
+      stopAtFirstError: true,
     });
   }
 }

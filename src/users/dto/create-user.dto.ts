@@ -29,8 +29,8 @@ export class CreateUserDto {
     example: 'jennie123',
   })
   @IsString({ message: 'Password must be a string' })
-  @IsNotEmpty({ message: 'Password is a required field' })
   @MinLength(6, { message: 'Password must be at least 6 characters' })
+  @IsNotEmpty({ message: 'Password is a required field' })
   password: string;
 
   @ApiProperty({
