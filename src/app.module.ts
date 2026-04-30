@@ -6,6 +6,8 @@ import { PostsModule } from './posts/posts.module';
 import { AuthModule } from './auth/auth.module';
 import { SecuritiesModule } from './shared/securities/securities.module';
 import configuration from './config/configuration';
+import { APP_PIPE } from '@nestjs/core';
+import { GlobalValidationPipe } from './common/pipes/global-validation.pipe';
 
 @Module({
   imports: [
@@ -23,6 +25,11 @@ import configuration from './config/configuration';
     SecuritiesModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_PIPE,
+      useClass: GlobalValidationPipe,
+    },
+  ],
 })
 export class AppModule {}

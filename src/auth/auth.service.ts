@@ -36,7 +36,7 @@ export class AuthService {
       });
     }
 
-    return { message: 'Logged in successfully', foundUser };
+    return { message: 'Logged in successfully' };
   }
 
   async register(registerDto: RegisterDto) {
@@ -48,11 +48,12 @@ export class AuthService {
     }
 
     const hashedPassword = await this.bcryptService.hash(registerDto.password);
-    const user = await this.usersModel.insertOne({
+
+    await this.usersModel.insertOne({
       ...registerDto,
       password: hashedPassword,
     });
 
-    return { message: 'Registered successfully', user };
+    return { message: 'Registered successfully' };
   }
 }
