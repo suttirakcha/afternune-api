@@ -21,6 +21,7 @@ export class AuthService {
       throw new BadRequestException({
         code: 'INCORRECT_CREDENTIALS',
         message: 'Username, email or password is incorrect, please try again.',
+        success: false,
       });
     }
 
@@ -33,10 +34,11 @@ export class AuthService {
       throw new BadRequestException({
         code: 'INCORRECT_CREDENTIALS',
         message: 'Username, email or password is incorrect, please try again.',
+        success: false,
       });
     }
 
-    return { message: 'Logged in successfully' };
+    return { message: 'Logged in successfully', success: true };
   }
 
   async register(registerDto: RegisterDto) {
@@ -44,6 +46,7 @@ export class AuthService {
       throw new BadRequestException({
         code: 'PASSWORD_NOT_MATCH',
         message: 'Password does not match',
+        success: false,
       });
     }
 
@@ -54,6 +57,6 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    return { message: 'Registered successfully' };
+    return { message: 'Registered successfully', success: true };
   }
 }
