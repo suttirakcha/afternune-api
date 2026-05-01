@@ -13,6 +13,9 @@ export class Users {
 
   @Prop({ required: false })
   bio?: string;
+
+  @Prop({ required: false })
+  image_url?: string;
 }
 
 export const UsersSchema = SchemaFactory.createForClass(Users);
