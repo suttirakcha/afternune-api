@@ -25,11 +25,11 @@ export class CreateUserDto {
   email: string;
 
   @ApiProperty({
-    description: 'The password of the user that must be at least 6 characters',
+    description: 'The password of the user that must be at least 8 characters',
     example: 'jennie123',
   })
   @IsString({ message: 'Password must be a string' })
-  @MinLength(6, { message: 'Password must be at least 6 characters' })
+  @MinLength(8, { message: 'Password must be at least 8 characters' })
   @IsNotEmpty({ message: 'Password is a required field' })
   password: string;
 

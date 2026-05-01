@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -9,6 +10,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Users } from '../users/schemas/users.schema';
 import { Model } from 'mongoose';
 import { BcryptService } from '../shared/securities/bcrypt.service';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -52,9 +54,9 @@ export class AuthService {
 
     if (foundUser) {
       throw new ConflictException({
-        code: 'USER_ALREADY_EXISTS',
+        code: 'ACCOUNT_ALREADY_EXISTS',
         message:
-          'This user already exists, please try another username and/or email.',
+          'This account already exists, please try another username and/or email.',
         success: false,
       });
     }
@@ -75,5 +77,25 @@ export class AuthService {
     });
 
     return { message: 'Registered successfully', success: true };
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    const foundUser = await this.usersModel.findOne({
+      $or: [{ email: forgotPasswordDto.email }],
+    });
+
+    if (!foundUser) {
+      throw new NotFoundException({
+        code: 'ACCOUNT_NOT_FOUND',
+        message:
+          "Sorry, we couldn't find an account associated with your email",
+        success: false,
+      });
+    }
+
+    return {
+      message:
+        'Your request for resetting the password has been sent to your email, please check your email.',
+    };
   }
 }
