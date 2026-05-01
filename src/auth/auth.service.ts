@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -42,6 +46,19 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto) {
+    const foundUser = await this.usersModel.findOne({
+      $or: [{ username: registerDto.username }, { email: registerDto.email }],
+    });
+
+    if (foundUser) {
+      throw new ConflictException({
+        code: 'USER_ALREADY_EXISTS',
+        message:
+          'This user already exists, please try another username and/or email.',
+        success: false,
+      });
+    }
+
     if (registerDto.password !== registerDto.confirmPassword) {
       throw new BadRequestException({
         code: 'PASSWORD_NOT_MATCH',
