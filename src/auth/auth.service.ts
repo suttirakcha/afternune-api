@@ -127,7 +127,7 @@ export class AuthService {
     if (!isTokenMatch) {
       throw new ForbiddenException({
         code: 'ACCESS_DENIED',
-        message: "You don't have permission to access it",
+        message: 'Token does not match',
         success: false,
       });
     }
