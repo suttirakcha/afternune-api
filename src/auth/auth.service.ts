@@ -7,7 +7,7 @@ import {
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Users } from '../users/schemas/users.schema';
+import { User } from '../users/schemas/users.schema';
 import { Model } from 'mongoose';
 import { BcryptService } from '../shared/securities/bcrypt.service';
 import { JwtService } from '@nestjs/jwt';
@@ -16,7 +16,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(Users.name) private usersModel: Model<Users>,
+    @InjectModel(User.name) private usersModel: Model<User>,
     private readonly bcryptService: BcryptService,
     private readonly jwtService: JwtService,
   ) {}
