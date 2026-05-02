@@ -1,38 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-
-export const users = [
-  {
-    id: '1',
-    username: 'Jennie',
-    email: 'jennie@mail.com',
-  },
-  {
-    id: '2',
-    username: 'Mike',
-    email: 'mike@mail.com',
-  },
-  {
-    id: '3',
-    username: 'Susan',
-    email: 'susan@mail.com',
-  },
-];
+import { InjectModel } from '@nestjs/mongoose';
+import { Users } from './schemas/users.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class UsersService {
-  getUsers() {
+  constructor(@InjectModel(Users.name) private usersModel: Model<Users>) {}
+  async getUsers() {
+    const users = await this.usersModel.find();
     return users;
   }
 
-  getUserById(id: string) {
-    const user = users.find((item) => item.id === id);
+  async getUserById(_id: string) {
+    const user = await this.usersModel.find({ _id });
     if (!user) {
       throw new NotFoundException('User not found');
     }
     return user;
-  }
-
-  getProfile() {
-    return users[2];
   }
 }

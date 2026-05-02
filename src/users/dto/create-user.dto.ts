@@ -1,18 +1,42 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
+import { Trim } from '../../common/decorators/trim.decorator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
-  @IsString()
-  @IsNotEmpty()
+  @ApiProperty({ description: 'The username of the user', example: 'Jennie' })
+  @IsString({ message: 'Username must be a string' })
+  @IsNotEmpty({ message: 'Username is a required field' })
+  @Trim()
   username: string;
 
-  @IsEmail()
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'The email of the user',
+    example: 'jennie@mail.com',
+  })
+  @IsEmail({}, { message: 'Invalid email address' })
+  @IsNotEmpty({ message: 'Email is a required field' })
+  @Trim()
   email: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'The password of the user that must be at least 8 characters',
+    example: 'jennie123',
+  })
+  @IsString({ message: 'Password must be a string' })
+  @MinLength(8, { message: 'Password must be at least 8 characters' })
+  @IsNotEmpty({ message: 'Password is a required field' })
   password: string;
 
+  @ApiProperty({
+    description: 'The bio of the user',
+    example: 'I am a user who is interested in coding',
+  })
   @IsString()
   @IsOptional()
   bio?: string;
