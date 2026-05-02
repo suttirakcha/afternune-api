@@ -2,6 +2,10 @@ export default () => ({
   bcrypt: {
     salt: process.env.SALT_ROUNDS,
   },
+  jwt: {
+    secret: process.env.ACCESS_JWT_SECRET,
+    expiresIn: process.env.ACCESS_EXPIRES_IN,
+  },
   database: {
     connectionString: process.env.MONGODB_URI,
   },

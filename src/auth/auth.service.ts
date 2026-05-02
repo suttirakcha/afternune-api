@@ -10,6 +10,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Users } from '../users/schemas/users.schema';
 import { Model } from 'mongoose';
 import { BcryptService } from '../shared/securities/bcrypt.service';
+import { JwtService } from '@nestjs/jwt';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @Injectable()
@@ -17,6 +18,7 @@ export class AuthService {
   constructor(
     @InjectModel(Users.name) private usersModel: Model<Users>,
     private readonly bcryptService: BcryptService,
+    private readonly jwtService: JwtService,
   ) {}
   async login(loginDto: LoginDto) {
     const foundUser = await this.usersModel.findOne({
@@ -44,7 +46,14 @@ export class AuthService {
       });
     }
 
-    return { message: 'Logged in successfully', success: true };
+    const payload = {
+      sub: foundUser._id,
+      username: foundUser.username,
+    };
+
+    const access_token = await this.jwtService.signAsync(payload);
+
+    return { message: 'Logged in successfully', success: true, access_token };
   }
 
   async register(registerDto: RegisterDto) {
@@ -77,6 +86,10 @@ export class AuthService {
     });
 
     return { message: 'Registered successfully', success: true };
+  }
+
+  validateUser(userId: string) {
+    return this.usersModel.findById(userId);
   }
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
