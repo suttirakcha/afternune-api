@@ -52,7 +52,6 @@ export class AuthService {
 
     const payload: JwtPayload = {
       sub: foundUser.id,
-      username: foundUser.username,
       refresh_token: foundUser.refresh_token,
     };
 
@@ -92,7 +91,6 @@ export class AuthService {
 
     const payload = {
       sub: newUser.id,
-      username: newUser.username,
       refresh_token: newUser.refresh_token,
     };
 
@@ -122,8 +120,8 @@ export class AuthService {
     }
 
     const isTokenMatch = await this.bcryptService.compare(
-      user.refresh_token,
       refreshToken,
+      user.refresh_token,
     );
 
     if (!isTokenMatch) {
@@ -136,7 +134,6 @@ export class AuthService {
 
     const payload = {
       sub: user.id,
-      username: user.username,
       refresh_token: refreshToken,
     };
 
