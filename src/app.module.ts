@@ -14,6 +14,7 @@ import configuration from './config/configuration';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
+        dbName: 'afndatabase',
         uri: configService.getOrThrow('database.connectionString'),
       }),
       inject: [ConfigService],

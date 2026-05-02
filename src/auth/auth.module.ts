@@ -3,7 +3,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UsersModule } from '../users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Users, UsersSchema } from '../users/schemas/users.schema';
+import { User, UsersSchema } from '../users/schemas/users.schema';
 import { SecuritiesModule } from '../shared/securities/securities.module';
 
 @Module({
@@ -12,7 +12,7 @@ import { SecuritiesModule } from '../shared/securities/securities.module';
     SecuritiesModule,
     MongooseModule.forFeature([
       {
-        name: Users.name,
+        name: User.name,
         schema: UsersSchema,
       },
     ]),
