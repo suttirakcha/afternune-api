@@ -33,6 +33,9 @@ export class CreateUserDto {
   @IsNotEmpty({ message: 'Password is a required field' })
   password: string;
 
+  @IsString()
+  refresh_token: string;
+
   @ApiProperty({
     description: 'The bio of the user',
     example: 'I am a user who is interested in coding',

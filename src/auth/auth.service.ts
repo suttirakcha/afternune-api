@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,6 +13,8 @@ import { Model } from 'mongoose';
 import { BcryptService } from '../shared/securities/bcrypt.service';
 import { JwtService } from '@nestjs/jwt';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { TokensService } from './tokens.service';
+import { JwtPayload } from '../types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +22,7 @@ export class AuthService {
     @InjectModel(User.name) private usersModel: Model<User>,
     private readonly bcryptService: BcryptService,
     private readonly jwtService: JwtService,
+    private readonly tokensService: TokensService,
   ) {}
   async login(loginDto: LoginDto) {
     const foundUser = await this.usersModel.findOne({
@@ -46,14 +50,15 @@ export class AuthService {
       });
     }
 
-    const payload = {
-      sub: foundUser._id,
+    const payload: JwtPayload = {
+      sub: foundUser.id,
       username: foundUser.username,
+      refresh_token: foundUser.refresh_token,
     };
 
-    const access_token = await this.jwtService.signAsync(payload);
-
-    return { message: 'Logged in successfully', success: true, access_token };
+    const tokens = await this.tokensService.getTokens(payload);
+    await this.updateRefreshToken(foundUser.id, tokens.refresh_token);
+    return { message: 'Logged in successfully', success: true, ...tokens };
   }
 
   async register(registerDto: RegisterDto) {
@@ -80,16 +85,69 @@ export class AuthService {
 
     const hashedPassword = await this.bcryptService.hash(registerDto.password);
 
-    await this.usersModel.insertOne({
+    const newUser = await this.usersModel.insertOne({
       ...registerDto,
       password: hashedPassword,
     });
 
+    const payload = {
+      sub: newUser.id,
+      username: newUser.username,
+      refresh_token: newUser.refresh_token,
+    };
+
+    const tokens = await this.tokensService.getTokens(payload);
+    await this.updateRefreshToken(newUser.id, tokens.refresh_token);
+
     return { message: 'Registered successfully', success: true };
   }
 
-  validateUser(userId: string) {
-    return this.usersModel.findById(userId);
+  async updateRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = await this.bcryptService.hash(refreshToken);
+    await this.usersModel.updateOne(
+      { _id: userId },
+      { $set: { refresh_token: hashedRefreshToken } },
+      { upsert: true },
+    );
+  }
+
+  async refreshTokens(userId: string, refreshToken: string) {
+    const user = await this.usersModel.findById(userId);
+    if (!user || !user.refresh_token) {
+      throw new ForbiddenException({
+        code: 'ACCESS_DENIED',
+        message: "You don't have permission to access it",
+        success: false,
+      });
+    }
+
+    const isTokenMatch = await this.bcryptService.compare(
+      user.refresh_token,
+      refreshToken,
+    );
+
+    if (!isTokenMatch) {
+      throw new ForbiddenException({
+        code: 'ACCESS_DENIED',
+        message: "You don't have permission to access it",
+        success: false,
+      });
+    }
+
+    const payload = {
+      sub: user.id,
+      username: user.username,
+      refresh_token: refreshToken,
+    };
+
+    const tokens = await this.tokensService.getTokens(payload);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+    return tokens;
+  }
+
+  async logout(userId: string) {
+    await this.usersModel.updateOne({ _id: userId }, { refresh_token: null });
+    return { message: 'Logged out successfully' };
   }
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {

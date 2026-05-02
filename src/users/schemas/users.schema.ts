@@ -16,6 +16,9 @@ export class User {
 
   @Prop({ required: false })
   image_url?: string;
+
+  @Prop()
+  refresh_token: string;
 }
 
 export const UsersSchema = SchemaFactory.createForClass(User);
