@@ -52,7 +52,6 @@ export class AuthService {
 
     const payload: JwtPayload = {
       sub: foundUser.id,
-      username: foundUser.username,
       refresh_token: foundUser.refresh_token,
     };
 
@@ -122,14 +121,14 @@ export class AuthService {
     }
 
     const isTokenMatch = await this.bcryptService.compare(
-      user.refresh_token,
       refreshToken,
+      user.refresh_token,
     );
 
     if (!isTokenMatch) {
       throw new ForbiddenException({
         code: 'ACCESS_DENIED',
-        message: "You don't have permission to access it",
+        message: 'Token does not match',
         success: false,
       });
     }
