@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,6 +13,12 @@ import { Model } from 'mongoose';
 import { BcryptService } from '../shared/securities/bcrypt.service';
 import { JwtService } from '@nestjs/jwt';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { TokensService } from './tokens.service';
+import { JwtPayload } from '../types/jwt-payload.type';
+import { type Response } from 'express';
+
+const ACCESS_TOKEN_COOKIE = 'accessToken';
+const REFRESH_TOKEN_COOKIE = 'refreshToken';
 
 @Injectable()
 export class AuthService {
@@ -19,8 +26,9 @@ export class AuthService {
     @InjectModel(User.name) private usersModel: Model<User>,
     private readonly bcryptService: BcryptService,
     private readonly jwtService: JwtService,
+    private readonly tokensService: TokensService,
   ) {}
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto, res: Response) {
     const foundUser = await this.usersModel.findOne({
       $or: [{ username: loginDto.identifier }, { email: loginDto.identifier }],
     });
@@ -46,14 +54,26 @@ export class AuthService {
       });
     }
 
-    const payload = {
-      sub: foundUser._id,
-      username: foundUser.username,
+    const payload: JwtPayload = {
+      sub: foundUser.id,
+      refresh_token: foundUser.refresh_token,
     };
 
-    const access_token = await this.jwtService.signAsync(payload);
+    const tokens = await this.tokensService.getTokens(payload);
+    await this.updateRefreshToken(foundUser.id, tokens.refresh_token);
 
-    return { message: 'Logged in successfully', success: true, access_token };
+    res.cookie(ACCESS_TOKEN_COOKIE, tokens.access_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+    });
+    res.cookie(REFRESH_TOKEN_COOKIE, tokens.refresh_token, {
+      maxAge: 7 * 30 * 24 * 60 * 60,
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+    });
+    return { message: 'Logged in successfully', success: true, ...tokens };
   }
 
   async register(registerDto: RegisterDto) {
@@ -80,16 +100,69 @@ export class AuthService {
 
     const hashedPassword = await this.bcryptService.hash(registerDto.password);
 
-    await this.usersModel.insertOne({
+    const newUser = await this.usersModel.insertOne({
       ...registerDto,
       password: hashedPassword,
     });
 
+    const payload = {
+      sub: newUser.id,
+      refresh_token: newUser.refresh_token,
+    };
+
+    const tokens = await this.tokensService.getTokens(payload);
+    await this.updateRefreshToken(newUser.id, tokens.refresh_token);
+
     return { message: 'Registered successfully', success: true };
   }
 
-  validateUser(userId: string) {
-    return this.usersModel.findById(userId);
+  async updateRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = await this.bcryptService.hash(refreshToken);
+    await this.usersModel.updateOne(
+      { _id: userId },
+      { $set: { refresh_token: hashedRefreshToken } },
+      { upsert: true },
+    );
+  }
+
+  async refreshTokens(userId: string, refreshToken: string) {
+    const user = await this.usersModel.findById(userId);
+    if (!user || !user.refresh_token) {
+      throw new ForbiddenException({
+        code: 'ACCESS_DENIED',
+        message: "You don't have permission to access it",
+        success: false,
+      });
+    }
+
+    const isTokenMatch = await this.bcryptService.compare(
+      refreshToken,
+      user.refresh_token,
+    );
+
+    if (!isTokenMatch) {
+      throw new ForbiddenException({
+        code: 'ACCESS_DENIED',
+        message: "You don't have permission to access it",
+        success: false,
+      });
+    }
+
+    const payload = {
+      sub: user.id,
+      refresh_token: refreshToken,
+    };
+
+    const tokens = await this.tokensService.getTokens(payload);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+    return tokens;
+  }
+
+  async logout(userId: string, res: Response) {
+    res.clearCookie(ACCESS_TOKEN_COOKIE);
+    res.clearCookie(REFRESH_TOKEN_COOKIE);
+    await this.usersModel.updateOne({ _id: userId }, { refresh_token: null });
+    return { message: 'Logged out successfully' };
   }
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
@@ -110,5 +183,10 @@ export class AuthService {
       message:
         'Your request for resetting the password has been sent to your email, please check your email.',
     };
+  }
+
+  async getProfile(userId: string) {
+    const user = await this.usersModel.findById(userId);
+    return user;
   }
 }
