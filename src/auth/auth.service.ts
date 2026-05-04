@@ -15,6 +15,10 @@ import { JwtService } from '@nestjs/jwt';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { TokensService } from './tokens.service';
 import { JwtPayload } from '../types/jwt-payload.type';
+import { type Response } from 'express';
+
+const ACCESS_TOKEN_COOKIE = 'accessToken';
+const REFRESH_TOKEN_COOKIE = 'refreshToken';
 
 @Injectable()
 export class AuthService {
@@ -24,7 +28,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly tokensService: TokensService,
   ) {}
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto, res: Response) {
     const foundUser = await this.usersModel.findOne({
       $or: [{ username: loginDto.identifier }, { email: loginDto.identifier }],
     });
@@ -57,6 +61,18 @@ export class AuthService {
 
     const tokens = await this.tokensService.getTokens(payload);
     await this.updateRefreshToken(foundUser.id, tokens.refresh_token);
+
+    res.cookie(ACCESS_TOKEN_COOKIE, tokens.access_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+    });
+    res.cookie(REFRESH_TOKEN_COOKIE, tokens.refresh_token, {
+      maxAge: 7 * 30 * 24 * 60 * 60,
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+    });
     return { message: 'Logged in successfully', success: true, ...tokens };
   }
 
@@ -142,7 +158,9 @@ export class AuthService {
     return tokens;
   }
 
-  async logout(userId: string) {
+  async logout(userId: string, res: Response) {
+    res.clearCookie(ACCESS_TOKEN_COOKIE);
+    res.clearCookie(REFRESH_TOKEN_COOKIE);
     await this.usersModel.updateOne({ _id: userId }, { refresh_token: null });
     return { message: 'Logged out successfully' };
   }
@@ -165,5 +183,10 @@ export class AuthService {
       message:
         'Your request for resetting the password has been sent to your email, please check your email.',
     };
+  }
+
+  async getProfile(userId: string) {
+    const user = await this.usersModel.findById(userId);
+    return user;
   }
 }

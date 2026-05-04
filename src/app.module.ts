@@ -12,7 +12,9 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [
     UsersModule,
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
-    JwtModule.register({ global: true }),
+    JwtModule.register({
+      global: true,
+    }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

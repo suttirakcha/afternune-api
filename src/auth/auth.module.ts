@@ -14,7 +14,7 @@ import { TokensService } from './tokens.service';
   imports: [
     UsersModule,
     SecuritiesModule,
-    PassportModule,
+    PassportModule.register({ session: true }),
     MongooseModule.forFeature([
       {
         name: User.name,
