@@ -10,9 +10,7 @@ export class CommentsService {
     @InjectModel(Comment.name) private commentsModel: Model<Comment>,
   ) {}
 
-  async getCommentsByPostId(
-    post_id: string,
-  ): Promise<{ comments: Comment[]; comment_count: number }> {
+  async getCommentsByPostId(post_id: string): Promise<Comment[]> {
     const comments: Comment[] = await this.commentsModel.aggregate([
       {
         $match: {
@@ -21,12 +19,7 @@ export class CommentsService {
       },
     ]);
 
-    const comment_count = await this.commentsModel.countDocuments({ post_id });
-
-    return {
-      comments,
-      comment_count,
-    };
+    return comments;
   }
 
   async addComment(
