@@ -17,6 +17,20 @@ export class CommentsService {
           post_id: new Types.ObjectId(post_id),
         },
       },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user_id',
+          foreignField: '_id',
+          as: 'user',
+          pipeline: [{ $project: { username: 1, image_url: 1, _id: 0 } }],
+        },
+      },
+      {
+        $addFields: {
+          user: { $first: '$user' },
+        },
+      },
     ]);
 
     return comments;
@@ -29,8 +43,8 @@ export class CommentsService {
   ) {
     await this.commentsModel.insertOne({
       detail: createCommentDto.detail,
-      user_id,
       post_id,
+      user_id,
     });
   }
 

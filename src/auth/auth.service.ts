@@ -17,9 +17,6 @@ import { TokensService } from './tokens.service';
 import { JwtPayload } from '../types/jwt-payload.type';
 import { type Response } from 'express';
 
-const ACCESS_TOKEN_COOKIE = 'accessToken';
-const REFRESH_TOKEN_COOKIE = 'refreshToken';
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -62,17 +59,11 @@ export class AuthService {
     const tokens = await this.tokensService.getTokens(payload);
     await this.updateRefreshToken(foundUser.id, tokens.refresh_token);
 
-    res.cookie(ACCESS_TOKEN_COOKIE, tokens.access_token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'lax',
-    });
-    res.cookie(REFRESH_TOKEN_COOKIE, tokens.refresh_token, {
-      maxAge: 7 * 30 * 24 * 60 * 60,
-      httpOnly: true,
-      secure: true,
-      sameSite: 'lax',
-    });
+    this.tokensService.setNewCookies(
+      res,
+      tokens.access_token,
+      tokens.refresh_token,
+    );
     return { message: 'Logged in successfully', success: true, ...tokens };
   }
 
@@ -125,7 +116,7 @@ export class AuthService {
     );
   }
 
-  async refreshTokens(userId: string, refreshToken: string) {
+  async refreshTokens(userId: string, refreshToken: string, res: Response) {
     const user = await this.usersModel.findById(userId);
     if (!user || !user.refresh_token) {
       throw new ForbiddenException({
@@ -155,12 +146,17 @@ export class AuthService {
 
     const tokens = await this.tokensService.getTokens(payload);
     await this.updateRefreshToken(user.id, tokens.refresh_token);
+
+    this.tokensService.setNewCookies(
+      res,
+      tokens.access_token,
+      tokens.refresh_token,
+    );
     return tokens;
   }
 
   async logout(userId: string, res: Response) {
-    res.clearCookie(ACCESS_TOKEN_COOKIE);
-    res.clearCookie(REFRESH_TOKEN_COOKIE);
+    this.tokensService.clearCookies(res);
     await this.usersModel.updateOne({ _id: userId }, { refresh_token: null });
     return { message: 'Logged out successfully' };
   }

@@ -64,8 +64,11 @@ export class PostsService {
     return post[0];
   }
 
-  async createPost(createPostDto: CreatePostDto) {
-    await this.postsModel.insertOne(createPostDto);
+  async createPost(createPostDto: CreatePostDto, user_id: string) {
+    await this.postsModel.insertOne({
+      ...createPostDto,
+      user_id,
+    });
     return { message: 'Successfully created post' };
   }
 }

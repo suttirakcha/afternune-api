@@ -43,8 +43,9 @@ export class AuthController {
   async refreshTokens(
     @CurrentUser('sub') sub: string,
     @CurrentUser('refresh_token') refresh_token: string,
+    @Res() res: Response,
   ) {
-    return this.authService.refreshTokens(sub, refresh_token);
+    return this.authService.refreshTokens(sub, refresh_token, res);
   }
 
   @UseGuards(AccessTokenGuard)
