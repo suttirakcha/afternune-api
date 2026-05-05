@@ -11,7 +11,7 @@ const POST_AGGREGATE = [
       localField: 'user_id',
       foreignField: '_id',
       as: 'user',
-      pipeline: [{ $project: { username: 1, _id: 0, image_url: 1 } }],
+      pipeline: [{ $project: { username: 1, image_url: 1 } }],
     },
   },
   {
@@ -24,7 +24,6 @@ const POST_AGGREGATE = [
         {
           $project: {
             detail: 1,
-            _id: 0,
             user_id: 1,
             createdAt: 1,
           },
