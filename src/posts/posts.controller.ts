@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { AccessTokenGuard } from '../common/guards/access-token.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -20,9 +22,13 @@ export class PostsController {
     return this.postsService.getPostById(postId);
   }
 
+  @UseGuards(AccessTokenGuard)
   @Post()
-  createPost(@Body() createPostDto: CreatePostDto) {
-    return this.postsService.createPost(createPostDto);
+  createPost(
+    @Body() createPostDto: CreatePostDto,
+    @CurrentUser('sub') sub: string,
+  ) {
+    return this.postsService.createPost(createPostDto, sub);
   }
 
   @Get(':postId/comments')
@@ -30,12 +36,13 @@ export class PostsController {
     return this.commentsService.getCommentsByPostId(postId);
   }
 
+  @UseGuards(AccessTokenGuard)
   @Post(':postId/comment')
   addComment(
     @Body() createCommentDto: CreateCommentDto,
     @Param('postId') postId: string,
-    userId: string,
+    @CurrentUser('sub') sub: string,
   ) {
-    return this.commentsService.addComment(createCommentDto, postId, userId);
+    return this.commentsService.addComment(createCommentDto, postId, sub);
   }
 }

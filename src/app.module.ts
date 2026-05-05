@@ -7,6 +7,8 @@ import { AuthModule } from './auth/auth.module';
 import { SecuritiesModule } from './shared/securities/securities.module';
 import configuration from './config/configuration';
 import { JwtModule } from '@nestjs/jwt';
+import { CloudinaryService } from './cloudinary/cloudinary.service';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -26,8 +28,9 @@ import { JwtModule } from '@nestjs/jwt';
     PostsModule,
     AuthModule,
     SecuritiesModule,
+    CloudinaryModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [CloudinaryService],
 })
 export class AppModule {}
