@@ -3,9 +3,7 @@ import { JwtPayload } from '../types/jwt-payload.type';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { type Response } from 'express';
-
-const ACCESS_TOKEN_COOKIE = 'accessToken';
-const REFRESH_TOKEN_COOKIE = 'refreshToken';
+import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from './constants';
 
 @Injectable()
 export class TokensService {

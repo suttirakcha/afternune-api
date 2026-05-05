@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -183,6 +184,12 @@ export class AuthService {
 
   async getProfile(userId: string) {
     const user = await this.usersModel.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException({
+        code: 'INVALID_CREDENTIALS',
+        message: 'Invalid credentials',
+      });
+    }
     return user;
   }
 }
