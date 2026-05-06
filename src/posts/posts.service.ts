@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post } from './schemas/posts.schema';
@@ -64,10 +64,19 @@ export class PostsService {
   }
 
   async createPost(createPostDto: CreatePostDto, user_id: string) {
-    await this.postsModel.insertOne({
+    const post = await this.postsModel.insertOne({
       ...createPostDto,
       user_id,
     });
-    return { message: 'Successfully created post' };
+
+    if (!post) {
+      throw new BadRequestException({
+        code: 'CREATE_POST_FAILED',
+        message: 'Failed to create the post',
+        success: false,
+      });
+    }
+
+    return { message: 'Successfully created post', success: true };
   }
 }
