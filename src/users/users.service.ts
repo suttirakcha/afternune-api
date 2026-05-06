@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/users.schema';
 import { Model, PipelineStage, Types } from 'mongoose';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { POST_AGGREGATE } from '../posts/posts.service';
 
 const POST_LOOKUP: PipelineStage[] = [
   {
@@ -11,9 +13,19 @@ const POST_LOOKUP: PipelineStage[] = [
       foreignField: 'user_id',
       as: 'posts',
       pipeline: [
-        { $project: { caption: 1, image_url: 1, createdAt: 1 } },
+        { $project: { caption: 1, image_url: 1, createdAt: 1, user_id: 1 } },
         { $sort: { createdAt: -1 } },
+        ...POST_AGGREGATE,
       ],
+    },
+  },
+  {
+    $project: {
+      username: 1,
+      bio: 1,
+      interests: 1,
+      gender: 1,
+      posts: '$posts',
     },
   },
 ];
@@ -40,5 +52,15 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
     return user[0];
+  }
+
+  async updateUser(_id: string, updateUserDto: UpdateUserDto) {
+    await this.usersModel.updateOne(
+      { _id },
+      {
+        $set: { ...updateUserDto },
+      },
+    );
+    return { message: 'Successfully updated the profile' };
   }
 }

@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Gender, Interests, Role } from '../../types/users.type';
 
 @Schema({ timestamps: true })
 export class User {
@@ -16,6 +17,15 @@ export class User {
 
   @Prop({ required: false })
   image_url?: string;
+
+  @Prop({ required: true, default: Role.USER })
+  role?: Role;
+
+  @Prop({ required: false })
+  interests?: Interests[];
+
+  @Prop({ required: false })
+  gender?: Gender;
 
   @Prop()
   refresh_token: string;

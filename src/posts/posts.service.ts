@@ -4,16 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Post } from './schemas/posts.schema';
 import { Model, Types } from 'mongoose';
 
-const POST_AGGREGATE = [
-  {
-    $lookup: {
-      from: 'users',
-      localField: 'user_id',
-      foreignField: '_id',
-      as: 'user',
-      pipeline: [{ $project: { username: 1, image_url: 1 } }],
-    },
-  },
+export const POST_AGGREGATE = [
   {
     $lookup: {
       from: 'comments',
@@ -29,6 +20,15 @@ const POST_AGGREGATE = [
           },
         },
       ],
+    },
+  },
+  {
+    $lookup: {
+      from: 'users',
+      localField: 'user_id',
+      foreignField: '_id',
+      as: 'user',
+      pipeline: [{ $project: { username: 1, image_url: 1 } }],
     },
   },
   {

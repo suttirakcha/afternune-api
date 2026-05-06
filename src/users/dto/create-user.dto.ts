@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -7,6 +8,7 @@ import {
 } from 'class-validator';
 import { Trim } from '../../common/decorators/trim.decorator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Gender, Interests, Role } from '../../types/users.type';
 
 export class CreateUserDto {
   @ApiProperty({ description: 'The username of the user', example: 'Jennie' })
@@ -43,4 +45,27 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   bio?: string;
+
+  @ApiProperty({
+    description: 'The interests of the user',
+    example: 'Music, Entertainment, Sports',
+  })
+  @IsEnum(Interests, { each: true })
+  @IsOptional()
+  interests?: Interests[];
+
+  @ApiProperty({
+    description: 'The role of the user',
+    example: 'User, Admin, Community creator',
+  })
+  @IsEnum(Role)
+  role?: Role;
+
+  @ApiProperty({
+    description: 'The gender of the user',
+    example: 'Male, Female, Not Specified',
+  })
+  @IsEnum(Gender)
+  @IsOptional()
+  gender?: Gender;
 }
