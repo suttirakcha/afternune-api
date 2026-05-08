@@ -1,16 +1,28 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { AccessTokenGuard } from '../common/guards/access-token.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { LikesService } from './likes.service';
+import { UpdatePostDto } from './dto/update-post.dto';
 
 @Controller('posts')
 export class PostsController {
   constructor(
     private readonly postsService: PostsService,
     private readonly commentsService: CommentsService,
+    private readonly likesService: LikesService,
   ) {}
   @Get()
   getPosts() {
@@ -28,7 +40,17 @@ export class PostsController {
     @Body() createPostDto: CreatePostDto,
     @CurrentUser('sub') sub: string,
   ) {
-    return this.postsService.createPost(createPostDto, sub);
+    return this.postsService.createPost(sub, createPostDto);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Patch(':postId')
+  updatePost(
+    @Body() updatePostDto: UpdatePostDto,
+    @CurrentUser('sub') sub: string,
+    @Param('postId') postId: string,
+  ) {
+    return this.postsService.updatePost(postId, sub, updatePostDto);
   }
 
   @Get(':postId/comments')
@@ -44,5 +66,17 @@ export class PostsController {
     @CurrentUser('sub') sub: string,
   ) {
     return this.commentsService.addComment(createCommentDto, postId, sub);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post(':postId/like')
+  likePost(@Param('postId') postId: string, @CurrentUser('sub') sub: string) {
+    return this.likesService.likePost(postId, sub);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Delete(':postId/unlike')
+  unlikePost(@Param('postId') postId: string, @CurrentUser('sub') sub: string) {
+    return this.likesService.unlikePost(postId, sub);
   }
 }

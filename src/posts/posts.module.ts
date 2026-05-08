@@ -5,6 +5,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Post, PostsSchema } from './schemas/posts.schema';
 import { CommentsService } from './comments.service';
 import { Comment, CommentsSchema } from './schemas/comments.schema';
+import { Like, LikesSchema } from './schemas/likes.schema';
+import { LikesService } from './likes.service';
 
 @Module({
   imports: [
@@ -17,9 +19,13 @@ import { Comment, CommentsSchema } from './schemas/comments.schema';
         name: Comment.name,
         schema: CommentsSchema,
       },
+      {
+        name: Like.name,
+        schema: LikesSchema,
+      },
     ]),
   ],
   controllers: [PostsController],
-  providers: [PostsService, CommentsService],
+  providers: [PostsService, CommentsService, LikesService],
 })
 export class PostsModule {}
