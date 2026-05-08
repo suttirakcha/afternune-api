@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -33,5 +35,32 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return await this.usersService.updateUser(sub, updateUserDto);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Get(':userId/followed')
+  async getFollowedUser(
+    @CurrentUser('sub') sub: string,
+    @Param('userId') userId: string,
+  ) {
+    return await this.usersService.getFollowedUser(sub, userId);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post(':userId/follow')
+  async followUser(
+    @CurrentUser('sub') sub: string,
+    @Param('userId') userId: string,
+  ) {
+    return await this.usersService.followUser(sub, userId);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Delete(':userId/unfollow')
+  async unfollowUser(
+    @CurrentUser('sub') sub: string,
+    @Param('userId') userId: string,
+  ) {
+    return await this.usersService.unfollowUser(sub, userId);
   }
 }

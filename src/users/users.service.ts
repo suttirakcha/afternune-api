@@ -1,9 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/users.schema';
 import { Model, PipelineStage, Types } from 'mongoose';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { POST_AGGREGATE } from '../posts/posts.service';
+import { Follow } from './schemas/follows.schema';
 
 const POST_LOOKUP: PipelineStage[] = [
   {
@@ -20,19 +26,42 @@ const POST_LOOKUP: PipelineStage[] = [
     },
   },
   {
+    $lookup: {
+      from: 'follows',
+      localField: '_id',
+      foreignField: 'follower_id',
+      as: 'followers',
+      // pipeline: [{ $project: { username: 1 } }],
+    },
+  },
+  {
+    $lookup: {
+      from: 'follows',
+      localField: '_id',
+      foreignField: 'following_id',
+      as: 'following',
+      // pipeline: [{ $project: { username: 1 } }],
+    },
+  },
+  {
     $project: {
       username: 1,
       bio: 1,
       interests: 1,
       gender: 1,
       posts: '$posts',
+      followers: 1,
+      following: 1,
     },
   },
 ];
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private usersModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private usersModel: Model<User>,
+    @InjectModel(Follow.name) private followModel: Model<Follow>,
+  ) {}
   async getUsers(search: string = ''): Promise<User[]> {
     const users: User[] = await this.usersModel.aggregate([
       {
@@ -56,7 +85,11 @@ export class UsersService {
     ]);
 
     if (!user.length) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException({
+        code: 'USER_NOT_FOUND',
+        message: 'User not found',
+        success: false,
+      });
     }
     return user[0];
   }
@@ -68,10 +101,58 @@ export class UsersService {
         $set: { ...updateUserDto },
       },
     );
-    return { message: 'Successfully updated the profile' };
+    return { success: true, message: 'Successfully updated the profile' };
   }
 
-  async searchUser(username: string) {
-    await this.usersModel.find({ username });
+  async getFollowedUser(_id: string, user_id: string) {
+    const follow = await this.followModel.findOne({
+      following_id: _id,
+      follower_id: user_id,
+    });
+    return follow;
+  }
+
+  async followUser(_id: string, user_id: string) {
+    const follow = await this.getFollowedUser(_id, user_id);
+
+    if (follow) {
+      throw new ConflictException({
+        code: 'ALREADY_FOLLOWED',
+        message: 'You cannot follow this user as you have already followed',
+        success: false,
+      });
+    }
+
+    if (_id === user_id) {
+      throw new ConflictException({
+        code: 'FAILED_TO_FOLLOW',
+        message: 'You cannot follow yourself',
+        success: false,
+      });
+    }
+
+    await this.followModel.insertOne({
+      following_id: _id,
+      follower_id: user_id,
+    });
+  }
+
+  async unfollowUser(_id: string, user_id: string) {
+    const follow = await this.getFollowedUser(_id, user_id);
+
+    if (!follow) {
+      throw new BadRequestException({
+        code: 'FOLLOW_NOT_FOUND',
+        message: 'Failed to unfollow user',
+        success: false,
+      });
+    }
+
+    await this.followModel.deleteOne({
+      following_id: follow.following_id,
+      follower_id: follow.follower_id,
+    });
+
+    return { message: 'Successfully unfollowed' };
   }
 }
