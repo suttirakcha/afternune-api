@@ -33,8 +33,15 @@ const POST_LOOKUP: PipelineStage[] = [
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(User.name) private usersModel: Model<User>) {}
-  async getUsers(): Promise<User[]> {
-    const users: User[] = await this.usersModel.aggregate(POST_LOOKUP);
+  async getUsers(search: string = ''): Promise<User[]> {
+    const users: User[] = await this.usersModel.aggregate([
+      {
+        $match: {
+          username: { $regex: search, $options: 'i' },
+        },
+      },
+      ...POST_LOOKUP,
+    ]);
     return users;
   }
 
@@ -62,5 +69,9 @@ export class UsersService {
       },
     );
     return { message: 'Successfully updated the profile' };
+  }
+
+  async searchUser(username: string) {
+    await this.usersModel.find({ username });
   }
 }

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AccessTokenGuard } from '../common/guards/access-token.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -9,8 +17,8 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  async getUsers() {
-    return await this.usersService.getUsers();
+  async getUsers(@Query('search') search?: string) {
+    return await this.usersService.getUsers(search);
   }
 
   @Get(':id')
