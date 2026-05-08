@@ -109,6 +109,11 @@ export class UsersService {
       following_id: _id,
       follower_id: user_id,
     });
+
+    if (!follow) {
+      return null;
+    }
+
     return follow;
   }
 
