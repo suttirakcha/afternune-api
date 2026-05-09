@@ -53,6 +53,12 @@ export class PostsController {
     return this.postsService.updatePost(postId, sub, updatePostDto);
   }
 
+  @UseGuards(AccessTokenGuard)
+  @Delete(':postId')
+  deletePost(@CurrentUser('sub') sub: string, @Param('postId') postId: string) {
+    return this.postsService.deletePost(postId, sub);
+  }
+
   @Get(':postId/comments')
   getCommentsByPostId(@Param('postId') postId: string) {
     return this.commentsService.getCommentsByPostId(postId);

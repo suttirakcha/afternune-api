@@ -88,7 +88,6 @@ export class UsersService {
       throw new NotFoundException({
         code: 'USER_NOT_FOUND',
         message: 'User not found',
-        success: false,
       });
     }
     return user[0];
@@ -124,7 +123,6 @@ export class UsersService {
       throw new ConflictException({
         code: 'ALREADY_FOLLOWED',
         message: 'You cannot follow this user as you have already followed',
-        success: false,
       });
     }
 
@@ -132,7 +130,6 @@ export class UsersService {
       throw new ConflictException({
         code: 'FAILED_TO_FOLLOW',
         message: 'You cannot follow yourself',
-        success: false,
       });
     }
 
@@ -149,7 +146,6 @@ export class UsersService {
       throw new BadRequestException({
         code: 'FOLLOW_NOT_FOUND',
         message: 'Failed to unfollow user',
-        success: false,
       });
     }
 

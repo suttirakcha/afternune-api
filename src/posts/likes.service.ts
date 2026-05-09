@@ -18,7 +18,6 @@ export class LikesService {
       throw new NotFoundException({
         code: 'POST_NOT_FOUND',
         message: 'Post not found',
-        success: false,
       });
     }
 

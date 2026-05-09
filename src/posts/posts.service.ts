@@ -78,7 +78,6 @@ export class PostsService {
       throw new NotFoundException({
         code: 'POST_NOT_FOUND',
         message: 'Post not found',
-        success: false,
       });
     }
 
@@ -95,7 +94,6 @@ export class PostsService {
       throw new BadRequestException({
         code: 'CREATE_POST_FAILED',
         message: 'Failed to create the post',
-        success: false,
       });
     }
 
@@ -122,10 +120,26 @@ export class PostsService {
         code: 'UPDATE_POST_FAILED',
         message:
           'Failed to update the post as it may be unavailable or deleted',
-        success: false,
       });
     }
 
     return { message: 'Successfully updated post', success: true };
+  }
+
+  async deletePost(post_id: string, user_id: string) {
+    const post = await this.postsModel.deleteOne({
+      _id: post_id,
+      user_id,
+    });
+
+    if (!post) {
+      throw new BadRequestException({
+        code: 'UPDATE_POST_FAILED',
+        message:
+          'Failed to update the post as it may be unavailable or deleted',
+      });
+    }
+
+    return { message: 'Successfully deleted post', success: true };
   }
 }
