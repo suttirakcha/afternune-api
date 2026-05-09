@@ -29,6 +29,9 @@ export class User {
 
   @Prop()
   refresh_token: string;
+
+  @Prop({ default: true })
+  is_first_time: boolean;
 }
 
 export const UsersSchema = SchemaFactory.createForClass(User);
