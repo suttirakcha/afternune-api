@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post } from './schemas/posts.schema';
@@ -33,6 +37,14 @@ export const POST_AGGREGATE = [
     },
   },
   {
+    $lookup: {
+      from: 'likes',
+      localField: '_id',
+      foreignField: 'post_id',
+      as: 'likes',
+    },
+  },
+  {
     $addFields: {
       user: { $first: '$user' },
     },
@@ -61,6 +73,15 @@ export class PostsService {
         },
       },
     ]);
+
+    if (!post.length) {
+      throw new NotFoundException({
+        code: 'POST_NOT_FOUND',
+        message: 'Post not found',
+        success: false,
+      });
+    }
+
     return post[0];
   }
 
