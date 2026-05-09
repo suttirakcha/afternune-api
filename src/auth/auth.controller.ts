@@ -6,7 +6,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AccessTokenGuard } from '../common/guards/access-token.guard';
 import { RefreshTokenGuard } from '../common/guards/refresh-token.guard';
-import { type Response, type Request } from 'express';
+import { type Response } from 'express';
 
 @Controller('auth')
 export class AuthController {

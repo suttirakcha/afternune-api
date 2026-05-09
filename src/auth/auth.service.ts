@@ -17,6 +17,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { TokensService } from './tokens.service';
 import { JwtPayload } from '../types/jwt-payload.type';
 import { type Response } from 'express';
+import { Role } from '../types/users.type';
 
 @Injectable()
 export class AuthService {
@@ -35,7 +36,6 @@ export class AuthService {
       throw new BadRequestException({
         code: 'INCORRECT_CREDENTIALS',
         message: 'Username, email or password is incorrect, please try again.',
-        success: false,
       });
     }
 
@@ -48,12 +48,12 @@ export class AuthService {
       throw new BadRequestException({
         code: 'INCORRECT_CREDENTIALS',
         message: 'Username, email or password is incorrect, please try again.',
-        success: false,
       });
     }
 
     const payload: JwtPayload = {
       sub: foundUser.id,
+      role: foundUser.role ?? Role.USER,
       refresh_token: foundUser.refresh_token,
     };
 
@@ -78,7 +78,6 @@ export class AuthService {
         code: 'ACCOUNT_ALREADY_EXISTS',
         message:
           'This account already exists, please try another username and/or email.',
-        success: false,
       });
     }
 
@@ -86,7 +85,6 @@ export class AuthService {
       throw new BadRequestException({
         code: 'PASSWORD_NOT_MATCH',
         message: 'Password does not match',
-        success: false,
       });
     }
 
@@ -99,6 +97,7 @@ export class AuthService {
 
     const payload = {
       sub: newUser.id,
+      role: Role.USER,
       refresh_token: newUser.refresh_token,
     };
 
@@ -123,7 +122,6 @@ export class AuthService {
       throw new ForbiddenException({
         code: 'ACCESS_DENIED',
         message: "You don't have permission to access it",
-        success: false,
       });
     }
 
@@ -136,12 +134,12 @@ export class AuthService {
       throw new ForbiddenException({
         code: 'ACCESS_DENIED',
         message: "You don't have permission to access it",
-        success: false,
       });
     }
 
     const payload = {
       sub: user.id,
+      role: user.role as Role,
       refresh_token: refreshToken,
     };
 
@@ -172,7 +170,6 @@ export class AuthService {
         code: 'ACCOUNT_NOT_FOUND',
         message:
           "Sorry, we couldn't find an account associated with your email",
-        success: false,
       });
     }
 

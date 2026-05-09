@@ -13,6 +13,10 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   validate(payload: JwtPayload) {
-    return payload;
+    return {
+      sub: payload.sub,
+      role: payload.role,
+      refresh_token: payload.refresh_token,
+    };
   }
 }

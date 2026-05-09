@@ -9,6 +9,9 @@ import configuration from './config/configuration';
 import { JwtModule } from '@nestjs/jwt';
 import { CloudinaryService } from './cloudinary/cloudinary.service';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { APP_FILTER, APP_PIPE } from '@nestjs/core';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { GlobalValidationPipe } from './common/pipes/global-validation.pipe';
 
 @Module({
   imports: [
@@ -31,6 +34,16 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     CloudinaryModule,
   ],
   controllers: [],
-  providers: [CloudinaryService],
+  providers: [
+    CloudinaryService,
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+    {
+      provide: APP_PIPE,
+      useClass: GlobalValidationPipe,
+    },
+  ],
 })
 export class AppModule {}

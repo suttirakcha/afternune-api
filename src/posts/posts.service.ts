@@ -1,8 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post } from './schemas/posts.schema';
 import { Model, Types } from 'mongoose';
+import { UpdatePostDto } from './dto/update-post.dto';
 
 export const POST_AGGREGATE = [
   {
@@ -29,6 +34,14 @@ export const POST_AGGREGATE = [
       foreignField: '_id',
       as: 'user',
       pipeline: [{ $project: { username: 1, image_url: 1 } }],
+    },
+  },
+  {
+    $lookup: {
+      from: 'likes',
+      localField: '_id',
+      foreignField: 'post_id',
+      as: 'likes',
     },
   },
   {
@@ -60,14 +73,73 @@ export class PostsService {
         },
       },
     ]);
+
+    if (!post.length) {
+      throw new NotFoundException({
+        code: 'POST_NOT_FOUND',
+        message: 'Post not found',
+      });
+    }
+
     return post[0];
   }
 
-  async createPost(createPostDto: CreatePostDto, user_id: string) {
-    await this.postsModel.insertOne({
+  async createPost(user_id: string, createPostDto: CreatePostDto) {
+    const post = await this.postsModel.insertOne({
       ...createPostDto,
       user_id,
     });
-    return { message: 'Successfully created post' };
+
+    if (!post) {
+      throw new BadRequestException({
+        code: 'CREATE_POST_FAILED',
+        message: 'Failed to create the post',
+      });
+    }
+
+    return { message: 'Successfully created post', success: true };
+  }
+
+  async updatePost(
+    post_id: string,
+    user_id: string,
+    updatePostDto: UpdatePostDto,
+  ) {
+    const post = await this.postsModel.updateOne(
+      {
+        _id: post_id,
+        user_id,
+      },
+      {
+        $set: updatePostDto,
+      },
+    );
+
+    if (!post) {
+      throw new BadRequestException({
+        code: 'UPDATE_POST_FAILED',
+        message:
+          'Failed to update the post as it may be unavailable or deleted',
+      });
+    }
+
+    return { message: 'Successfully updated post', success: true };
+  }
+
+  async deletePost(post_id: string, user_id: string) {
+    const post = await this.postsModel.deleteOne({
+      _id: post_id,
+      user_id,
+    });
+
+    if (!post) {
+      throw new BadRequestException({
+        code: 'UPDATE_POST_FAILED',
+        message:
+          'Failed to update the post as it may be unavailable or deleted',
+      });
+    }
+
+    return { message: 'Successfully deleted post', success: true };
   }
 }

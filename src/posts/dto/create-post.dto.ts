@@ -7,7 +7,4 @@ export class CreatePostDto {
 
   @IsNotEmpty()
   image_url: string;
-
-  @IsString()
-  user_id: string;
 }
