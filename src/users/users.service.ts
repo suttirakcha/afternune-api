@@ -11,7 +11,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { POST_AGGREGATE } from '../posts/posts.service';
 import { Follow } from './schemas/follows.schema';
 
-const POST_LOOKUP: PipelineStage[] = [
+const USER_LOOKUP: PipelineStage[] = [
   {
     $lookup: {
       from: 'posts',
@@ -31,7 +31,19 @@ const POST_LOOKUP: PipelineStage[] = [
       localField: '_id',
       foreignField: 'follower_id',
       as: 'followers',
-      // pipeline: [{ $project: { username: 1 } }],
+      pipeline: [
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'following_id',
+            foreignField: '_id',
+            as: 'user',
+            pipeline: [{ $project: { username: 1, image_url: 1 } }],
+          },
+        },
+        { $unwind: '$user' },
+        { $replaceRoot: { newRoot: '$user' } },
+      ],
     },
   },
   {
@@ -40,18 +52,34 @@ const POST_LOOKUP: PipelineStage[] = [
       localField: '_id',
       foreignField: 'following_id',
       as: 'following',
-      // pipeline: [{ $project: { username: 1 } }],
+      pipeline: [
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'follower_id',
+            foreignField: '_id',
+            as: 'user',
+            pipeline: [{ $project: { username: 1, image_url: 1 } }],
+          },
+        },
+        { $unwind: '$user' },
+        { $replaceRoot: { newRoot: '$user' } },
+      ],
     },
   },
   {
     $project: {
       username: 1,
+      email: 1,
+      role: 1,
       bio: 1,
       interests: 1,
       gender: 1,
       posts: '$posts',
       followers: 1,
       following: 1,
+      refresh_token: 1,
+      is_first_time: 1,
     },
   },
 ];
@@ -69,7 +97,7 @@ export class UsersService {
           username: { $regex: search, $options: 'i' },
         },
       },
-      ...POST_LOOKUP,
+      ...USER_LOOKUP,
     ]);
     return users;
   }
@@ -81,7 +109,7 @@ export class UsersService {
           _id: new Types.ObjectId(_id),
         },
       },
-      ...POST_LOOKUP,
+      ...USER_LOOKUP,
     ]);
 
     if (!user.length) {

@@ -12,20 +12,20 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../users/schemas/users.schema';
 import { Model } from 'mongoose';
 import { BcryptService } from '../shared/securities/bcrypt.service';
-import { JwtService } from '@nestjs/jwt';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { TokensService } from './tokens.service';
 import { JwtPayload } from '../types/jwt-payload.type';
 import { type Response } from 'express';
 import { Role } from '../types/users.type';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private usersModel: Model<User>,
     private readonly bcryptService: BcryptService,
-    private readonly jwtService: JwtService,
     private readonly tokensService: TokensService,
+    private readonly usersService: UsersService,
   ) {}
   async login(loginDto: LoginDto, res: Response) {
     const foundUser = await this.usersModel.findOne({
@@ -180,7 +180,7 @@ export class AuthService {
   }
 
   async getProfile(userId: string) {
-    const user = await this.usersModel.findById(userId);
+    const user = await this.usersService.getUserById(userId);
     if (!user) {
       throw new UnauthorizedException({
         code: 'INVALID_CREDENTIALS',
