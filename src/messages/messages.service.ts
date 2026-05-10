@@ -188,11 +188,21 @@ export class MessagesService {
       newMessage,
     );
 
-    await this.pusherService.trigger('chatrooms', 'fetch-rooms', {
+    await this.pusherService.trigger(`chatrooms-${sender_id}`, 'update-room', {
       _id: room._id,
       lastMessage: message,
       receiver: newMessage?.receiver,
     });
+
+    await this.pusherService.trigger(
+      `chatrooms-${receiver_id}`,
+      'update-room',
+      {
+        _id: room._id,
+        lastMessage: message,
+        receiver: newMessage?.sender,
+      },
+    );
 
     return newMessage;
   }
