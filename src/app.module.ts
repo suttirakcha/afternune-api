@@ -12,6 +12,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { GlobalValidationPipe } from './common/pipes/global-validation.pipe';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { GlobalValidationPipe } from './common/pipes/global-validation.pipe';
     AuthModule,
     SecuritiesModule,
     CloudinaryModule,
+    MessagesModule,
   ],
   controllers: [],
   providers: [
