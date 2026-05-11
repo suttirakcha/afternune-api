@@ -13,6 +13,7 @@ import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { GlobalValidationPipe } from './common/pipes/global-validation.pipe';
 import { MessagesModule } from './messages/messages.module';
+import { CommunitiesModule } from './communities/communities.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { MessagesModule } from './messages/messages.module';
     SecuritiesModule,
     CloudinaryModule,
     MessagesModule,
+    CommunitiesModule,
   ],
   controllers: [],
   providers: [

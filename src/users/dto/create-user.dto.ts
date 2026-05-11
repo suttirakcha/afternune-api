@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -45,6 +46,26 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   bio?: string;
+
+  @ApiProperty({
+    description: 'A profile image url of the user',
+    example: 'http://example.com/image/12345',
+  })
+  @IsString()
+  @IsOptional()
+  image_url?: string;
+
+  @ApiProperty({
+    description: 'The date of birth of the user',
+    example: '01-01-2000',
+  })
+  @IsString()
+  @IsOptional()
+  date_of_birth?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  is_first_time?: boolean;
 
   @ApiProperty({
     description: 'The interests of the user',

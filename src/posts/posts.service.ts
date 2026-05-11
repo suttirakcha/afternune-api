@@ -65,7 +65,7 @@ export class PostsService {
   }
 
   async getPostById(_id: string): Promise<Post> {
-    const post: Post[] = await this.postsModel.aggregate([
+    const [post] = await this.postsModel.aggregate<Post>([
       ...POST_AGGREGATE,
       {
         $match: {
@@ -74,14 +74,14 @@ export class PostsService {
       },
     ]);
 
-    if (!post.length) {
+    if (!post) {
       throw new NotFoundException({
         code: 'POST_NOT_FOUND',
         message: 'Post not found',
       });
     }
 
-    return post[0];
+    return post;
   }
 
   async createPost(user_id: string, createPostDto: CreatePostDto) {
