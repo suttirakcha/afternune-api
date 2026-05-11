@@ -97,6 +97,8 @@ export class MessagesService {
       },
     ]);
 
+    if (!room) await this.chatRoomsModel.create({ participants });
+
     const messages = await this.chatMessageModel.aggregate([
       {
         $match: {
