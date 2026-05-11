@@ -48,6 +48,14 @@ export class CreateUserDto {
   bio?: string;
 
   @ApiProperty({
+    description: 'A profile image url of the user',
+    example: 'http://example.com/image/12345',
+  })
+  @IsString()
+  @IsOptional()
+  image_url?: string;
+
+  @ApiProperty({
     description: 'The date of birth of the user',
     example: '01-01-2000',
   })

@@ -70,6 +70,7 @@ const USER_LOOKUP: PipelineStage[] = [
   {
     $project: {
       username: 1,
+      image_url: 1,
       email: 1,
       role: 1,
       bio: 1,
