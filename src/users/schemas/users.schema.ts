@@ -18,6 +18,9 @@ export class User {
   @Prop({ required: false })
   image_url?: string;
 
+  @Prop({ required: false })
+  date_of_birth?: string;
+
   @Prop({ required: true, default: Role.USER })
   role?: Role;
 
