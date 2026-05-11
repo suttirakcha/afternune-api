@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AccessTokenGuard } from '../common/guards/access-token.guard';
 import { CreateCommunityDto } from './dto/create-community.dto';
@@ -24,5 +32,32 @@ export class CommunitiesController {
     @Body() createCommunityDto: CreateCommunityDto,
   ) {
     return this.communitiesService.createCommunity(sub, createCommunityDto);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post(':communityId/join')
+  joinCommunity(
+    @CurrentUser('sub') sub: string,
+    @Param('communityId') communityId: string,
+  ) {
+    return this.communitiesService.joinCommunity(sub, communityId);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Get(':communityId/members')
+  getCommunityMembers(
+    @CurrentUser('sub') sub: string,
+    @Param('communityId') communityId: string,
+  ) {
+    return this.communitiesService.findCommunityMembers(sub, communityId);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Delete(':communityId/leave')
+  leaveCommunity(
+    @CurrentUser('sub') sub: string,
+    @Param('communityId') communityId: string,
+  ) {
+    return this.communitiesService.leaveCommunity(sub, communityId);
   }
 }

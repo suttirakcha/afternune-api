@@ -2,7 +2,11 @@ import { Module } from '@nestjs/common';
 import { CommunitiesController } from './communities.controller';
 import { CommunitiesService } from './communities.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Community, CommunitySchema } from './schemas/community.schema';
+import { Community, CommunitySchema } from './schemas/communities.schema';
+import {
+  CommunityMember,
+  CommunityMemberSchema,
+} from './schemas/community-members.schema';
 
 @Module({
   imports: [
@@ -10,6 +14,10 @@ import { Community, CommunitySchema } from './schemas/community.schema';
       {
         name: Community.name,
         schema: CommunitySchema,
+      },
+      {
+        name: CommunityMember.name,
+        schema: CommunityMemberSchema,
       },
     ]),
   ],

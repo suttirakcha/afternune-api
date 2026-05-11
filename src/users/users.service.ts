@@ -68,6 +68,27 @@ const USER_LOOKUP: PipelineStage[] = [
     },
   },
   {
+    $lookup: {
+      from: 'communitymembers',
+      localField: '_id',
+      foreignField: 'member_id',
+      as: 'joined_communities',
+      pipeline: [
+        {
+          $lookup: {
+            from: 'communities',
+            localField: 'community_id',
+            foreignField: '_id',
+            as: 'communities',
+            pipeline: [{ $project: { title: 1, image_url: 1 } }],
+          },
+        },
+        { $unwind: '$communities' },
+        { $replaceRoot: { newRoot: '$communities' } },
+      ],
+    },
+  },
+  {
     $project: {
       username: 1,
       image_url: 1,
@@ -81,6 +102,7 @@ const USER_LOOKUP: PipelineStage[] = [
       following: 1,
       refresh_token: 1,
       is_first_time: 1,
+      joined_communities: 1,
     },
   },
 ];
