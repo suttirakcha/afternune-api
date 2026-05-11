@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Interests } from '../../types/users.type';
 
 export class CreateCommunityDto {
@@ -11,8 +11,10 @@ export class CreateCommunityDto {
   detail: string;
 
   @IsString()
+  @IsOptional()
   image_url?: string;
 
   @IsEnum(Interests, { each: true })
-  categories: Interests[];
+  @IsOptional()
+  categories?: Interests[];
 }
