@@ -19,7 +19,7 @@ export class User {
   image_url?: string;
 
   @Prop({ required: false })
-  date_of_birth?: string;
+  date_of_birth?: Date;
 
   @Prop({ required: true, default: Role.USER })
   role?: Role;

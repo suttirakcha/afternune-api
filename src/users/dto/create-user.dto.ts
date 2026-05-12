@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsDate,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -10,6 +11,7 @@ import {
 import { Trim } from '../../common/decorators/trim.decorator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Gender, Interests, Role } from '../../types/users.type';
+import { Type } from 'class-transformer';
 
 export class CreateUserDto {
   @ApiProperty({ description: 'The username of the user', example: 'Jennie' })
@@ -59,7 +61,8 @@ export class CreateUserDto {
     description: 'The date of birth of the user',
     example: '01-01-2000',
   })
-  @IsString()
+  @IsDate()
+  @Type(() => Date)
   @IsOptional()
   date_of_birth?: string;
 
