@@ -54,12 +54,26 @@ export const POST_AGGREGATE = [
 @Injectable()
 export class PostsService {
   constructor(@InjectModel(Post.name) private postsModel: Model<Post>) {}
-  async getPosts(): Promise<Post[]> {
+  async getPosts(limit?: number, skip?: number): Promise<Post[]> {
     const posts: Post[] = await this.postsModel.aggregate([
       ...POST_AGGREGATE,
+      ...(skip
+        ? [
+            {
+              $skip: skip,
+            },
+          ]
+        : []),
       {
         $sort: { createdAt: -1 },
       },
+      ...(limit
+        ? [
+            {
+              $limit: limit,
+            },
+          ]
+        : []),
     ]);
     return posts;
   }

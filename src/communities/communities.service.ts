@@ -5,11 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Community } from './schemas/communities.schema';
-import { Model, PipelineStage, Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateCommunityDto } from './dto/create-community.dto';
 import { CommunityMember } from './schemas/community-members.schema';
 
-const COMMUNITY_AGGREGATE: PipelineStage[] = [
+export const COMMUNITY_AGGREGATE = [
   {
     $lookup: {
       from: 'users',

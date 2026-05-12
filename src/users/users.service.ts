@@ -10,6 +10,7 @@ import { Model, PipelineStage, Types } from 'mongoose';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { POST_AGGREGATE } from '../posts/posts.service';
 import { Follow } from './schemas/follows.schema';
+import { COMMUNITY_AGGREGATE } from '../communities/communities.service';
 
 const USER_LOOKUP: PipelineStage[] = [
   {
@@ -23,6 +24,15 @@ const USER_LOOKUP: PipelineStage[] = [
         { $sort: { createdAt: -1 } },
         ...POST_AGGREGATE,
       ],
+    },
+  },
+  {
+    $lookup: {
+      from: 'communities',
+      localField: '_id',
+      foreignField: 'creator_id',
+      as: 'communities',
+      pipeline: [{ $sort: { updatedAt: -1 } }, ...COMMUNITY_AGGREGATE],
     },
   },
   {
@@ -98,6 +108,7 @@ const USER_LOOKUP: PipelineStage[] = [
       interests: 1,
       gender: 1,
       posts: '$posts',
+      communities: '$communities',
       followers: 1,
       following: 1,
       refresh_token: 1,
@@ -113,13 +124,20 @@ export class UsersService {
     @InjectModel(User.name) private usersModel: Model<User>,
     @InjectModel(Follow.name) private followModel: Model<Follow>,
   ) {}
-  async getUsers(search: string = ''): Promise<User[]> {
+  async getUsers(search: string = '', limit: number = 5): Promise<User[]> {
     const users: User[] = await this.usersModel.aggregate([
       {
         $match: {
           username: { $regex: search, $options: 'i' },
         },
       },
+      ...(limit
+        ? [
+            {
+              $limit: limit,
+            },
+          ]
+        : []),
       ...USER_LOOKUP,
     ]);
     return users;
