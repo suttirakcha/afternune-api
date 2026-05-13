@@ -14,6 +14,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { GlobalValidationPipe } from './common/pipes/global-validation.pipe';
 import { MessagesModule } from './messages/messages.module';
 import { CommunitiesModule } from './communities/communities.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { CommunitiesModule } from './communities/communities.module';
     CloudinaryModule,
     MessagesModule,
     CommunitiesModule,
+    ReportsModule,
   ],
   controllers: [],
   providers: [
