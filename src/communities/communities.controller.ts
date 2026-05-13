@@ -11,18 +11,23 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AccessTokenGuard } from '../common/guards/access-token.guard';
 import { CreateCommunityDto } from './dto/create-community.dto';
 import { CommunitiesService } from './communities.service';
+import { CommunityEventService } from './community-event.service';
+import { CreateCommunityEventDto } from './dto/create-event.dto';
 
 @Controller('communities')
 export class CommunitiesController {
-  constructor(private readonly communitiesService: CommunitiesService) {}
+  constructor(
+    private readonly communitiesService: CommunitiesService,
+    private readonly communityEventService: CommunityEventService,
+  ) {}
   @Get()
   getCommunities() {
     return this.communitiesService.getCommunities();
   }
 
-  @Get(':id')
-  getCommunityById(@Param('id') id: string) {
-    return this.communitiesService.getCommunityById(id);
+  @Get(':communityId')
+  getCommunityById(@Param('communityId') communityId: string) {
+    return this.communitiesService.getCommunityById(communityId);
   }
 
   @UseGuards(AccessTokenGuard)
@@ -32,6 +37,20 @@ export class CommunitiesController {
     @Body() createCommunityDto: CreateCommunityDto,
   ) {
     return this.communitiesService.createCommunity(sub, createCommunityDto);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post(':communityId')
+  updateCommunity(
+    @Param('communityId') communityId: string,
+    @CurrentUser('sub') sub: string,
+    @Body() createCommunityDto: CreateCommunityDto,
+  ) {
+    return this.communitiesService.updateCommunity(
+      communityId,
+      sub,
+      createCommunityDto,
+    );
   }
 
   @UseGuards(AccessTokenGuard)
@@ -59,5 +78,40 @@ export class CommunitiesController {
     @Param('communityId') communityId: string,
   ) {
     return this.communitiesService.leaveCommunity(sub, communityId);
+  }
+
+  @Get(':communityId/events')
+  getEventsByCommunityId(@Param('communityId') communityId: string) {
+    return this.communityEventService.getEventsFromCommunityId(communityId);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post(':communityId/create-event')
+  createCommunityEvent(
+    @CurrentUser('sub') sub: string,
+    @Param('communityId') communityId: string,
+    @Body() createCommunityEventDto: CreateCommunityEventDto,
+  ) {
+    return this.communityEventService.createCommunityEvent(
+      communityId,
+      sub,
+      createCommunityEventDto,
+    );
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post(':communityId/update-event/:communityEventId')
+  updateCommunityEvent(
+    @CurrentUser('sub') sub: string,
+    @Param('communityId') communityId: string,
+    @Param('communityEventId') communityEventId: string,
+    @Body() createCommunityEventDto: CreateCommunityEventDto,
+  ) {
+    return this.communityEventService.updateCommunityEvent(
+      communityId,
+      communityEventId,
+      sub,
+      createCommunityEventDto,
+    );
   }
 }

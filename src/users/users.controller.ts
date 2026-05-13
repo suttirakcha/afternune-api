@@ -19,8 +19,11 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  async getUsers(@Query('search') search?: string) {
-    return await this.usersService.getUsers(search);
+  async getUsers(
+    @Query('search') search?: string,
+    @Query('limit') limit?: number,
+  ) {
+    return await this.usersService.getUsers(search, limit);
   }
 
   @Get(':id')

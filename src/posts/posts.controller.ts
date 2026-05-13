@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
@@ -25,8 +26,8 @@ export class PostsController {
     private readonly likesService: LikesService,
   ) {}
   @Get()
-  getPosts() {
-    return this.postsService.getPosts();
+  getPosts(@Query('limit') limit?: number, @Query('skip') skip?: number) {
+    return this.postsService.getPosts(limit, skip);
   }
 
   @Get(':postId')

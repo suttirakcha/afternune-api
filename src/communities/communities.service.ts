@@ -1,15 +1,17 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Community } from './schemas/communities.schema';
-import { Model, PipelineStage, Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateCommunityDto } from './dto/create-community.dto';
 import { CommunityMember } from './schemas/community-members.schema';
+import { UpdateComunityDto } from './dto/update-community.dto';
 
-const COMMUNITY_AGGREGATE: PipelineStage[] = [
+export const COMMUNITY_AGGREGATE = [
   {
     $lookup: {
       from: 'users',
@@ -17,6 +19,14 @@ const COMMUNITY_AGGREGATE: PipelineStage[] = [
       foreignField: '_id',
       as: 'creator',
       pipeline: [{ $project: { username: 1, image_url: 1 } }],
+    },
+  },
+  {
+    $lookup: {
+      from: 'communityevents',
+      localField: '_id',
+      foreignField: 'community_id',
+      as: 'events',
     },
   },
   {
@@ -98,6 +108,32 @@ export class CommunitiesService {
     });
 
     return { message: 'Successfully created community' };
+  }
+
+  async updateCommunity(
+    community_id: string,
+    creator_id: string,
+    updateCommunityDto: UpdateComunityDto,
+  ) {
+    const community = await this.communitiesModel.updateOne(
+      {
+        _id: community_id,
+        creator_id,
+      },
+      {
+        $set: updateCommunityDto,
+      },
+    );
+
+    if (!community) {
+      throw new BadRequestException({
+        code: 'UPDATE_COMMUNITY_FAILED',
+        message:
+          'Failed to update the community as it may be unavailable or deleted, or you may not have the permission to update it',
+      });
+    }
+
+    return { message: 'Successfully updated community' };
   }
 
   async findCommunityMembers(member_id: string, community_id: string) {
