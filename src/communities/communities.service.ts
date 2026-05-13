@@ -23,6 +23,14 @@ export const COMMUNITY_AGGREGATE = [
   },
   {
     $lookup: {
+      from: 'communityevents',
+      localField: '_id',
+      foreignField: 'community_id',
+      as: 'events',
+    },
+  },
+  {
+    $lookup: {
       from: 'communitymembers',
       localField: '_id',
       foreignField: 'community_id',

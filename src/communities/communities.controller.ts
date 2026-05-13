@@ -98,4 +98,20 @@ export class CommunitiesController {
       createCommunityEventDto,
     );
   }
+
+  @UseGuards(AccessTokenGuard)
+  @Post(':communityId/update-event/:communityEventId')
+  updateCommunityEvent(
+    @CurrentUser('sub') sub: string,
+    @Param('communityId') communityId: string,
+    @Param('communityEventId') communityEventId: string,
+    @Body() createCommunityEventDto: CreateCommunityEventDto,
+  ) {
+    return this.communityEventService.updateCommunityEvent(
+      communityId,
+      communityEventId,
+      sub,
+      createCommunityEventDto,
+    );
+  }
 }
