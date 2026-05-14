@@ -12,6 +12,11 @@ export class ReportsController {
     return this.reportsService.getReports();
   }
 
+  @Get(':id')
+  getReportById(@Param('id') id: string) {
+    return this.reportsService.getReportById(id);
+  }
+
   @UseGuards(AccessTokenGuard)
   @Post(':id/report')
   createReport(@Body() reportDto: ReportDto, @Param('id') id: string) {
