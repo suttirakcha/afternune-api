@@ -97,7 +97,10 @@ export class MessagesService {
       },
     ]);
 
-    if (!room) await this.chatRoomsModel.create({ participants });
+    if (!room) {
+      const createdRoom = await this.chatRoomsModel.create({ participants });
+      return { room: createdRoom, receiver_id };
+    }
 
     const messages = await this.chatMessageModel.aggregate([
       {
