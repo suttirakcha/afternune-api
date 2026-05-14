@@ -124,8 +124,8 @@ export class UsersService {
     @InjectModel(User.name) private usersModel: Model<User>,
     @InjectModel(Follow.name) private followModel: Model<Follow>,
   ) {}
-  async getUsers(search: string = '', limit: number = 5): Promise<User[]> {
-    const users: User[] = await this.usersModel.aggregate([
+  async getUsers(search: string = '', limit?: number) {
+    const users = await this.usersModel.aggregate<User[]>([
       {
         $match: {
           username: { $regex: search, $options: 'i' },
@@ -143,8 +143,8 @@ export class UsersService {
     return users;
   }
 
-  async getUserById(_id: string): Promise<User> {
-    const user: User[] = await this.usersModel.aggregate([
+  async getUserById(_id: string) {
+    const [user] = await this.usersModel.aggregate<User>([
       {
         $match: {
           _id: new Types.ObjectId(_id),
@@ -153,13 +153,13 @@ export class UsersService {
       ...USER_LOOKUP,
     ]);
 
-    if (!user.length) {
+    if (!user) {
       throw new NotFoundException({
         code: 'USER_NOT_FOUND',
         message: 'User not found',
       });
     }
-    return user[0];
+    return user;
   }
 
   async updateUser(_id: string, updateUserDto: UpdateUserDto) {

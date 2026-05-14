@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -21,8 +22,11 @@ export class CommunitiesController {
     private readonly communityEventService: CommunityEventService,
   ) {}
   @Get()
-  getCommunities() {
-    return this.communitiesService.getCommunities();
+  getCommunities(
+    @Query('search') search?: string,
+    @Query('limit') limit?: number,
+  ) {
+    return this.communitiesService.getCommunities(search, limit);
   }
 
   @Get(':communityId')

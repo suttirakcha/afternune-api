@@ -54,9 +54,17 @@ export const POST_AGGREGATE = [
 @Injectable()
 export class PostsService {
   constructor(@InjectModel(Post.name) private postsModel: Model<Post>) {}
-  async getPosts(limit?: number, skip?: number): Promise<Post[]> {
+  async getPosts(
+    search: string = '',
+    limit?: number,
+    skip?: number,
+  ): Promise<Post[]> {
     const posts: Post[] = await this.postsModel.aggregate([
-      ...POST_AGGREGATE,
+      {
+        $match: {
+          caption: { $regex: search, $options: 'i' },
+        },
+      },
       ...(skip
         ? [
             {
@@ -74,6 +82,7 @@ export class PostsService {
             },
           ]
         : []),
+      ...POST_AGGREGATE,
     ]);
     return posts;
   }
