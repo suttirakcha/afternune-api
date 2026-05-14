@@ -72,9 +72,22 @@ export class CommunitiesService {
     @InjectModel(CommunityMember.name)
     private communityMembersModel: Model<CommunityMember>,
   ) {}
-  async getCommunities() {
-    const communities =
-      await this.communitiesModel.aggregate<Community[]>(COMMUNITY_AGGREGATE);
+  async getCommunities(search: string = '', limit?: number) {
+    const communities = await this.communitiesModel.aggregate<Community[]>([
+      {
+        $match: {
+          title: { $regex: search, $options: 'i' },
+        },
+      },
+      ...(limit
+        ? [
+            {
+              $limit: limit,
+            },
+          ]
+        : []),
+      ...COMMUNITY_AGGREGATE,
+    ]);
     return communities;
   }
 

@@ -26,8 +26,12 @@ export class PostsController {
     private readonly likesService: LikesService,
   ) {}
   @Get()
-  getPosts(@Query('limit') limit?: number, @Query('skip') skip?: number) {
-    return this.postsService.getPosts(limit, skip);
+  getPosts(
+    @Query('search') search?: string,
+    @Query('limit') limit?: number,
+    @Query('skip') skip?: number,
+  ) {
+    return this.postsService.getPosts(search, limit, skip);
   }
 
   @Get(':postId')
