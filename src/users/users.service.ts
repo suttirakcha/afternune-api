@@ -11,6 +11,24 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { POST_AGGREGATE } from '../posts/posts.service';
 import { Follow } from './schemas/follows.schema';
 import { COMMUNITY_AGGREGATE } from '../communities/communities.service';
+import { UserBlock } from './schemas/blocks.schema';
+
+// export const getUserLookup = (userId: string) => [
+//   {
+//     $match: {
+//       $expr: {
+//         $nor: [
+//           { $eq: ['$user.blocked_user_id', new Types.ObjectId(userId)] },
+//           { $eq: ['$user.blocking_user_id', new Types.ObjectId(userId)] },
+//           { $eq: ['$creator.blocked_user_id', new Types.ObjectId(userId)] },
+//           { $eq: ['$creator.blocking_user_id', new Types.ObjectId(userId)] },
+//           { $eq: ['$receiver.blocked_user_id', new Types.ObjectId(userId)] },
+//           { $eq: ['$receiver.blocking_user_id', new Types.ObjectId(userId)] },
+//         ],
+//       },
+//     },
+//   },
+// ];
 
 const USER_LOOKUP: PipelineStage[] = [
   {
@@ -56,6 +74,48 @@ const USER_LOOKUP: PipelineStage[] = [
       ],
     },
   },
+  // {
+  //   $lookup: {
+  //     from: 'userblocks',
+  //     localField: '_id',
+  //     foreignField: 'blocked_user_id',
+  //     as: 'blocked_users',
+  //     pipeline: [
+  //       {
+  //         $lookup: {
+  //           from: 'users',
+  //           localField: 'blocking_user_id',
+  //           foreignField: '_id',
+  //           as: 'user',
+  //           pipeline: [{ $project: { username: 1, image_url: 1 } }],
+  //         },
+  //       },
+  //       { $unwind: '$user' },
+  //       { $replaceRoot: { newRoot: '$user' } },
+  //     ],
+  //   },
+  // },
+  // {
+  //   $lookup: {
+  //     from: 'userblocks',
+  //     localField: '_id',
+  //     foreignField: 'blocking_user_id',
+  //     as: 'blocking_users',
+  //     pipeline: [
+  //       {
+  //         $lookup: {
+  //           from: 'users',
+  //           localField: 'blocked_user_id',
+  //           foreignField: '_id',
+  //           as: 'user',
+  //           pipeline: [{ $project: { username: 1, image_url: 1 } }],
+  //         },
+  //       },
+  //       { $unwind: '$user' },
+  //       { $replaceRoot: { newRoot: '$user' } },
+  //     ],
+  //   },
+  // },
   {
     $lookup: {
       from: 'follows',
@@ -114,6 +174,8 @@ const USER_LOOKUP: PipelineStage[] = [
       refresh_token: 1,
       is_first_time: 1,
       joined_communities: 1,
+      // blocked_users: 1,
+      // blocking_users: 1,
     },
   },
 ];
@@ -123,6 +185,7 @@ export class UsersService {
   constructor(
     @InjectModel(User.name) private usersModel: Model<User>,
     @InjectModel(Follow.name) private followModel: Model<Follow>,
+    @InjectModel(UserBlock.name) private userBlockModel: Model<UserBlock>,
   ) {}
   async getUsers(search: string = '', limit?: number) {
     const users = await this.usersModel.aggregate<User[]>([
@@ -130,6 +193,9 @@ export class UsersService {
         $match: {
           username: { $regex: search, $options: 'i' },
         },
+      },
+      {
+        $sample: { size: 5 },
       },
       ...(limit
         ? [
@@ -185,6 +251,19 @@ export class UsersService {
     return follow;
   }
 
+  async getBlockedUser(_id: string, user_id: string) {
+    const blocked = await this.userBlockModel.findOne({
+      blocking_user_id: _id,
+      blocked_user_id: user_id,
+    });
+
+    if (!blocked) {
+      return null;
+    }
+
+    return blocked;
+  }
+
   async followUser(_id: string, user_id: string) {
     const follow = await this.getFollowedUser(_id, user_id);
 
@@ -208,6 +287,31 @@ export class UsersService {
     });
   }
 
+  async blockUser(_id: string, user_id: string) {
+    const blocked = await this.getBlockedUser(_id, user_id);
+
+    if (blocked) {
+      throw new ConflictException({
+        code: 'ALREADY_BLOCKED',
+        message: 'You cannot block this user as you have already blocked',
+      });
+    }
+
+    if (_id === user_id) {
+      throw new ConflictException({
+        code: 'FAILED_TO_BLOCK',
+        message: 'You cannot block yourself',
+      });
+    }
+
+    await this.userBlockModel.insertOne({
+      blocking_user_id: _id,
+      blocked_user_id: user_id,
+    });
+
+    return { message: 'Successfully blocked' };
+  }
+
   async unfollowUser(_id: string, user_id: string) {
     const follow = await this.getFollowedUser(_id, user_id);
 
@@ -224,5 +328,23 @@ export class UsersService {
     });
 
     return { message: 'Successfully unfollowed' };
+  }
+
+  async unblockUser(_id: string, user_id: string) {
+    const blocked = await this.getBlockedUser(_id, user_id);
+
+    if (!blocked) {
+      throw new BadRequestException({
+        code: 'BLOCK_NOT_FOUND',
+        message: 'Failed to unblock user',
+      });
+    }
+
+    await this.userBlockModel.deleteOne({
+      blocking_user_id: blocked.blocking_user_id,
+      blocked_user_id: blocked.blocked_user_id,
+    });
+
+    return { message: 'Successfully unblocked' };
   }
 }

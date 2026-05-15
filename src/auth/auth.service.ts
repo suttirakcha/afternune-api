@@ -18,6 +18,7 @@ import { JwtPayload } from '../types/jwt-payload.type';
 import { type Response } from 'express';
 import { Role } from '../types/users.type';
 import { UsersService } from '../users/users.service';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -173,10 +174,51 @@ export class AuthService {
       });
     }
 
+    const token = await this.tokensService.generateResetPasswordToken({
+      email: foundUser.email,
+    });
+
     return {
       message:
         'Your request for resetting the password has been sent to your email, please check your email.',
+      token,
     };
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto, token: string) {
+    const payload = await this.tokensService.verifyResetPasswordToken(token);
+    if (!payload) {
+      throw new BadRequestException({
+        code: 'INVALID_CREDENTIALS',
+        message: 'Invalid credentials',
+      });
+    }
+
+    const user = await this.usersModel.findOne({
+      email: payload.email,
+    });
+
+    if (!user) {
+      throw new BadRequestException({
+        code: 'USER_NOT_FOUND',
+        message: 'User not found',
+      });
+    }
+
+    const hashedPassword = await this.bcryptService.hash(
+      resetPasswordDto.newPassword,
+    );
+
+    await this.usersModel.updateOne(
+      {
+        email: user.email,
+      },
+      {
+        $set: { password: hashedPassword },
+      },
+    );
+
+    return { message: 'Successfully reset the password' };
   }
 
   async getProfile(userId: string) {
