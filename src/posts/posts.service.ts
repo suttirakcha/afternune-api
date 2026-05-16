@@ -33,7 +33,16 @@ export const POST_AGGREGATE = [
       localField: 'user_id',
       foreignField: '_id',
       as: 'user',
-      pipeline: [{ $project: { username: 1, image_url: 1 } }],
+      pipeline: [
+        {
+          $project: {
+            username: 1,
+            image_url: 1,
+            blocked_users: 1,
+            blocking_users: 1,
+          },
+        },
+      ],
     },
   },
   {
