@@ -50,6 +50,15 @@ export class UsersController {
   }
 
   @UseGuards(AccessTokenGuard)
+  @Get(':userId/blocked')
+  async getBlockedUser(
+    @CurrentUser('sub') sub: string,
+    @Param('userId') userId: string,
+  ) {
+    return await this.usersService.getBlockedUser(sub, userId);
+  }
+
+  @UseGuards(AccessTokenGuard)
   @Post(':userId/follow')
   async followUser(
     @CurrentUser('sub') sub: string,
@@ -59,11 +68,29 @@ export class UsersController {
   }
 
   @UseGuards(AccessTokenGuard)
+  @Post(':userId/block')
+  async blockUser(
+    @CurrentUser('sub') sub: string,
+    @Param('userId') userId: string,
+  ) {
+    return await this.usersService.blockUser(sub, userId);
+  }
+
+  @UseGuards(AccessTokenGuard)
   @Delete(':userId/unfollow')
   async unfollowUser(
     @CurrentUser('sub') sub: string,
     @Param('userId') userId: string,
   ) {
     return await this.usersService.unfollowUser(sub, userId);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Delete(':userId/unblock')
+  async unblockUser(
+    @CurrentUser('sub') sub: string,
+    @Param('userId') userId: string,
+  ) {
+    return await this.usersService.unblockUser(sub, userId);
   }
 }

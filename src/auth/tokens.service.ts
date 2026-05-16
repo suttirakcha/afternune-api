@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { JwtPayload } from '../types/jwt-payload.type';
-import { JwtService } from '@nestjs/jwt';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { ForgotPasswordPayload, JwtPayload } from '../types/jwt-payload.type';
+import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { type Response } from 'express';
 import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from './constants';
@@ -28,6 +28,37 @@ export class TokensService {
       access_token,
       refresh_token,
     };
+  }
+
+  async generateResetPasswordToken(payload: { email: string }) {
+    const token = await this.jwtService.signAsync(payload, {
+      secret: this.configService.get('jwt.reset_password_secret'),
+      expiresIn: this.configService.get('jwt.reset_password_expiresIn'),
+    });
+
+    return token;
+  }
+
+  async verifyResetPasswordToken(token: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync<ForgotPasswordPayload>(
+        token,
+        {
+          secret: this.configService.get('jwt.reset_password_secret'),
+          algorithms: ['HS256'],
+        },
+      );
+
+      return payload;
+    } catch (error: unknown) {
+      if (error instanceof JsonWebTokenError) {
+        throw new BadRequestException({
+          code: 'INVALID_TOKEN',
+          message:
+            'Looks like the link you tried to access has expired or is invalid, please try again.',
+        });
+      }
+    }
   }
 
   setNewCookies(res: Response, access_token: string, refresh_token: string) {

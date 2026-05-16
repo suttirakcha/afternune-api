@@ -5,3 +5,9 @@ export type JwtPayload = {
   role: Role;
   refresh_token: string;
 };
+
+export type ForgotPasswordPayload = {
+  email: string;
+  iat: number;
+  exp: number;
+};
