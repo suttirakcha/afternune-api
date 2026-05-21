@@ -15,6 +15,10 @@ import { GlobalValidationPipe } from './common/pipes/global-validation.pipe';
 import { MessagesModule } from './messages/messages.module';
 import { CommunitiesModule } from './communities/communities.module';
 import { ReportsModule } from './reports/reports.module';
+import { NodemailerService } from './nodemailer/nodemailer.service';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
+import { NodemailerModule } from './nodemailer/nodemailer.module';
 
 @Module({
   imports: [
@@ -22,6 +26,27 @@ import { ReportsModule } from './reports/reports.module';
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
     JwtModule.register({
       global: true,
+    }),
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        transport: {
+          host: configService.getOrThrow<string>('nodemailer.host'),
+          port: 587,
+          secure: false,
+          auth: {
+            user: configService.getOrThrow<string>('nodemailer.username'),
+            pass: configService.getOrThrow<string>('nodemailer.password'),
+          },
+        },
+        defaults: {
+          from: '"No Reply" <noreply@example.com>',
+        },
+        template: {
+          adapter: new HandlebarsAdapter(),
+        },
+      }),
+      inject: [ConfigService],
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -38,10 +63,12 @@ import { ReportsModule } from './reports/reports.module';
     MessagesModule,
     CommunitiesModule,
     ReportsModule,
+    NodemailerModule,
   ],
   controllers: [],
   providers: [
     CloudinaryService,
+    NodemailerService,
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,

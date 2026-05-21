@@ -19,4 +19,9 @@ export default () => ({
     api_secret: process.env.CLOUDINARY_API_SECRET,
     upload_preset: process.env.UPLOAD_PRESET,
   },
+  nodemailer: {
+    host: process.env.NODEMAILER_HOST,
+    username: process.env.NODEMAILER_USERNAME,
+    password: process.env.NODEMAILER_PASSWORD,
+  },
 });
