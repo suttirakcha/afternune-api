@@ -64,14 +64,23 @@ export const POST_AGGREGATE = [
 export class PostsService {
   constructor(@InjectModel(Post.name) private postsModel: Model<Post>) {}
   async getPosts(
-    search: string = '',
+    // search: string = '',
     limit?: number,
     skip?: number,
+    userId?: string,
   ): Promise<Post[]> {
     const posts: Post[] = await this.postsModel.aggregate([
       {
         $match: {
-          caption: { $regex: search, $options: 'i' },
+          // $or: [
+          //   {
+          //     caption: { $regex: search, $options: 'i' },
+          //   },
+          //   {
+          //     user_id: new Types.ObjectId(userId),
+          //   },
+          // ],
+          ...(userId ? { user_id: new Types.ObjectId(userId) } : {}),
         },
       },
       ...(skip
