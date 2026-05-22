@@ -27,11 +27,12 @@ export class PostsController {
   ) {}
   @Get()
   getPosts(
-    @Query('search') search?: string,
+    // @Query('search') search?: string,
     @Query('limit') limit?: number,
     @Query('skip') skip?: number,
+    @Query('userId') userId?: string,
   ) {
-    return this.postsService.getPosts(search, limit, skip);
+    return this.postsService.getPosts(limit, skip, userId);
   }
 
   @Get(':postId')
