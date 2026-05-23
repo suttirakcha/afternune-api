@@ -180,7 +180,7 @@ export class AuthService {
 
     return {
       message:
-        'Your request for resetting the password has been sent to your email, please check your email.',
+        'Your request for resetting the password has been sent to your email, please check your email',
       token,
     };
   }
