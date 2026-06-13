@@ -12,7 +12,13 @@ export class CloudinaryController {
   constructor(private readonly cloudinaryService: CloudinaryService) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: {
+        fileSize: 10 * 1024 * 1024,
+      },
+    }),
+  )
   uploadImage(@UploadedFile() file: Express.Multer.File) {
     return this.cloudinaryService.uploadFile(file, 'common');
   }

@@ -166,11 +166,15 @@ export class MessagesService {
       room = await this.chatRoomsModel.create({
         participants: participants,
         lastMessage: message,
+        unreadCount: { [receiver_id]: 1 },
       });
     } else {
       await this.chatRoomsModel.updateOne(
         { _id: room._id },
-        { $set: { lastMessage: message } },
+        {
+          $set: { lastMessage: message },
+          $inc: { [`unreadCount.${receiver_id}`]: 1 },
+        },
       );
     }
 
@@ -210,5 +214,12 @@ export class MessagesService {
     );
 
     return newMessage;
+  }
+
+  async markAsRead(room_id: string, user_id: string) {
+    await this.chatRoomsModel.updateOne(
+      { _id: room_id },
+      { $set: { unreadCount: { [`unreadCount.${user_id}`]: 0 } } },
+    );
   }
 }

@@ -12,6 +12,7 @@ import { POST_AGGREGATE } from '../posts/posts.service';
 import { Follow } from './schemas/follows.schema';
 import { COMMUNITY_AGGREGATE } from '../communities/communities.service';
 import { UserBlock } from './schemas/blocks.schema';
+import { Role } from '../types/users.type';
 
 // export const getUserLookup = (userId: string) => [
 //   {
@@ -191,7 +192,11 @@ export class UsersService {
     const users = await this.usersModel.aggregate<User[]>([
       {
         $match: {
-          username: { $regex: search, $options: 'i' },
+          username: {
+            $regex: search,
+            $options: 'i',
+            $nin: [{ role: Role.ADMIN }],
+          },
         },
       },
       {

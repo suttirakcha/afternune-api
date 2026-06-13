@@ -15,6 +15,7 @@ import { GlobalValidationPipe } from './common/pipes/global-validation.pipe';
 import { MessagesModule } from './messages/messages.module';
 import { CommunitiesModule } from './communities/communities.module';
 import { ReportsModule } from './reports/reports.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ReportsModule } from './reports/reports.module';
     MessagesModule,
     CommunitiesModule,
     ReportsModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [

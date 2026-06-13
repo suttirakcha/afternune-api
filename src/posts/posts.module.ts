@@ -7,9 +7,11 @@ import { CommentsService } from './comments.service';
 import { Comment, CommentsSchema } from './schemas/comments.schema';
 import { Like, LikesSchema } from './schemas/likes.schema';
 import { LikesService } from './likes.service';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
+    NotificationsModule,
     MongooseModule.forFeature([
       {
         name: Post.name,

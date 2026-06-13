@@ -3,12 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Like } from './schemas/likes.schema';
 import { Model } from 'mongoose';
 import { Post } from './schemas/posts.schema';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class LikesService {
   constructor(
     @InjectModel(Like.name) private likesModel: Model<Like>,
     @InjectModel(Post.name) private postsModel: Model<Post>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findPost(post_id: string) {
@@ -26,6 +28,11 @@ export class LikesService {
 
   async likePost(post_id: string, user_id: string) {
     const post = await this.findPost(post_id);
+
+    await this.notificationsService.notifyUser(
+      user_id,
+      `This user liked your post`,
+    );
 
     await this.likesModel.insertOne({
       post_id: post.id,
