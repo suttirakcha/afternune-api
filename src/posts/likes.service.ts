@@ -4,6 +4,7 @@ import { Like } from './schemas/likes.schema';
 import { Model } from 'mongoose';
 import { Post } from './schemas/posts.schema';
 import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../types/notifications.type';
 
 @Injectable()
 export class LikesService {
@@ -26,17 +27,18 @@ export class LikesService {
     return post;
   }
 
-  async likePost(post_id: string, user_id: string) {
+  async likePost(post_id: string, sender_id: string, recipient_id: string) {
     const post = await this.findPost(post_id);
 
     await this.notificationsService.notifyUser(
-      user_id,
-      `This user liked your post`,
+      recipient_id,
+      sender_id,
+      NotificationType.LIKE,
     );
 
     await this.likesModel.insertOne({
       post_id: post.id,
-      user_id,
+      user_id: sender_id,
     });
   }
 

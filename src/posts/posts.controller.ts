@@ -81,9 +81,13 @@ export class PostsController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @Post(':postId/like')
-  likePost(@Param('postId') postId: string, @CurrentUser('sub') sub: string) {
-    return this.likesService.likePost(postId, sub);
+  @Post(':postId/like/:recipientId')
+  likePost(
+    @Param('postId') postId: string,
+    @CurrentUser('sub') sub: string,
+    @Param('recipientId') recipientId: string,
+  ) {
+    return this.likesService.likePost(postId, sub, recipientId);
   }
 
   @UseGuards(AccessTokenGuard)
